@@ -6,47 +6,47 @@
 using namespace std;
 
 // Check if input starts with "System.out."
-bool checkq0(string input) {
-    return input.substr(0, 11) == "System.out.";
+bool startsWithSystemOut(string input) {
+    return input.rfind("System.out.", 0) == 0; // rfind at position 0 ensures it starts with "System.out."
 }
 
-// Check if input contains print, printf, or println
-bool checkq1(string input, int &matchedPrint) {
+// Check if input contains print, printf, or println and return the matched length
+bool extractPrintType(string input, int &printTypeLength) {
     string printSyntax[3] = {"print(", "printf(", "println("};
     
     for (string ps : printSyntax) {
         if (input.substr(11, ps.length()) == ps) { 
-            matchedPrint = ps.length();
+            printTypeLength = ps.length();
             return true;
         }
     }
     return false;
 }
 
-bool checkAlphanumeric(const string& check) {
-    if (all_of(check.begin(), check.end(), [](char c) { return isalnum(c) || c == ' '; }))  return true;
-    else cout << "Current version of algorithms does not support non-alphanumeric characters in print parameter." << endl;
-    return false;
+bool isAlphanumericWithSpace(string check) {
+    return (all_of(check.begin(), check.end(), [](char c) { return isalnum(c) || c == ' '; }));
 }
 
-bool isValidQuotesType(string input, int start, string& quotesType) {
-    if ((input.substr(start, 1) == input.substr(input.length() - 3, 1)) && input.substr(input.length() - 2) == ");") {
-        quotesType = input.substr(start, 1);
+// Validate quotation marks and determine their type
+bool validQuotes(string input, int start, string& quotesType) {
+    if ((input[start] == input[input.length() - 3]) && input.substr(input.length() - 2) == ");") {
+        quotesType = input[start];
         return (quotesType == "\"" || quotesType == "'");
     }
     return false;
 }
 
+// Validate the parameter inside the print statement
 bool checkParameter(string input, int printTypeLength) {
     printTypeLength += 11;
 
     if (input == "System.out.println();") return true;
     if (input.length() < printTypeLength + 4) return false;
 
-    string quotesType;
+    string quotesType, param = input.substr(printTypeLength + 1, input.length() - printTypeLength - 4);
 
-    bool validQuotesResult = isValidQuotesType(input, printTypeLength, quotesType);
-    bool validAlphaNumeric = checkAlphanumeric(input.substr(printTypeLength + 1, input.length() - printTypeLength - 4));
+    bool validQuotesResult = validQuotes(input, printTypeLength, quotesType);
+    bool validAlphaNumeric = isAlphanumericWithSpace(param);
 
     if (printTypeLength - 11 == 7) {
         if (validQuotesResult && quotesType == "\"") { // valid printf syntax
@@ -55,39 +55,28 @@ bool checkParameter(string input, int printTypeLength) {
     } else {
         if (validQuotesResult) {
             if (quotesType == "'") // single quotes print 1 character
-                return (validAlphaNumeric && ((input.substr(printTypeLength + 1, input.length() - printTypeLength - 4)).length() == 1));
+                return (validAlphaNumeric && (param).length() == 1);
             else return (validAlphaNumeric);
         }
     }
     return false;
 }
 
-// Print result
-void printResult(bool valid) {
-    cout << (valid ? "Valid" : "Invalid") << " Java print statement!" << endl;
-}
-
 int main() {
     string input;
     while (true) {
-        cout << "Enter a Java print syntax (0 to exit): ";
+        cout << "Enter a Java print statement (0 to exit): ";
         getline(cin, input); // Read entire input with spaces
 
         if (input == "0") break;
         
-        // Check for "System.out."
-        if (!checkq0(input)) {
-            printResult(false);
+        int printTypeLength;
+
+        if (!startsWithSystemOut(input) || !extractPrintType(input, printTypeLength) || !checkParameter(input, printTypeLength)) {
+            cout << "Invalid Java print statement!" << endl;
             continue;
         }
-
-        // Extract and check print type
-        int printTypeLength;
-        if (!checkq1(input, printTypeLength)) {
-            printResult(false);
-            continue;;
-        }
-        printResult(checkParameter(input, printTypeLength));
+        cout << "Valid Java print statement. " << endl;
     }
     return 0;
 }

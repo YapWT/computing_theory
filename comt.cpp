@@ -48,18 +48,11 @@ bool checkParameter(string input, int printTypeLength) {
     bool validQuotesResult = validQuotes(input, printTypeLength, quotesType);
     bool validAlphaNumeric = isAlphanumericWithSpace(param);
 
-    if (printTypeLength - 11 == 7) {
-        if (validQuotesResult && quotesType == "\"") { // valid printf syntax
-            return (validAlphaNumeric);
-        }
-    } else {
-        if (validQuotesResult) {
-            if (quotesType == "'") // single quotes print 1 character
-                return (validAlphaNumeric && (param).length() == 1);
-            else return (validAlphaNumeric);
-        }
-    }
-    return false;
+    if (!validAlphaNumeric || !validQuotesResult) return false; 
+
+    if (printTypeLength - 11 == 7) return (quotesType == "\""); // valid printf syntax (only allow double quotes)
+    
+    return ((quotesType == "'" && param.length() == 1) || quotesType == "\""); // Single quotes should contain only one character
 }
 
 int main() {

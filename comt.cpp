@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string> 
-#include <cctype>
 #include <algorithm>
 
 using namespace std;
@@ -16,8 +15,7 @@ bool extractPrintType(string input, int &printTypeLength) {
     
     for (string ps : printSyntax) {
         if (input.substr(11, ps.length()) == ps) { 
-            printTypeLength = ps.length();
-            return true;
+            return printTypeLength = ps.length(), true;
         }
     }
     return false;
@@ -29,11 +27,10 @@ bool isAlphanumericWithSpace(string check) {
 
 // Validate quotation marks and determine their type
 bool validQuotes(string input, int start, string& quotesType) {
-    if ((input[start] == input[input.length() - 3]) && input.substr(input.length() - 2) == ");") {
-        quotesType = input[start];
-        return (quotesType == "\"" || quotesType == "'");
-    }
-    return false;
+    char startQuotes = input[start], endQuotes = input[input.length() - 3];
+
+    return quotesType = startQuotes, 
+            (startQuotes == endQuotes && (startQuotes == '"' || startQuotes == '\'') && input.substr(input.length() - 2) == ");");
 }
 
 // Validate the parameter inside the print statement
@@ -43,33 +40,23 @@ bool checkParameter(string input, int printTypeLength) {
     if (input == "System.out.println();") return true;
     if (input.length() < printTypeLength + 4) return false;
 
-    string quotesType, param = input.substr(printTypeLength + 1, input.length() - printTypeLength - 4);
+    string quotesType, param = input.substr(printTypeLength + 1, input.length() - printTypeLength - 4); // get the string in the parenthesis 
 
-    bool validQuotesResult = validQuotes(input, printTypeLength, quotesType);
-    bool validAlphaNumeric = isAlphanumericWithSpace(param);
+    if (!validQuotes(input, printTypeLength, quotesType) || !isAlphanumericWithSpace(param)) return false; // not valid quotes or alphanumeric with space
 
-    if (!validAlphaNumeric || !validQuotesResult) return false; 
-
-    if (printTypeLength - 11 == 7) return (quotesType == "\""); // valid printf syntax (only allow double quotes)
-    
-    return ((quotesType == "'" && param.length() == 1) || quotesType == "\""); // Single quotes should contain only one character
+    // valid printf syntax (only allow double quotes) 
+    // Single quotes should contain only one character
+    return (printTypeLength - 11 == 7) ? (quotesType == "\"") : ((quotesType == "'" && param.length() == 1) || quotesType == "\"");
 }
 
 int main() {
     string input;
-    while (true) {
-        cout << "Enter a Java print statement (0 to exit): ";
-        getline(cin, input); // Read entire input with spaces
+    int printTypeLength = 0;
 
-        if (input == "0") break;
-        
-        int printTypeLength;
-
-        if (!startsWithSystemOut(input) || !extractPrintType(input, printTypeLength) || !checkParameter(input, printTypeLength)) {
-            cout << "Invalid Java print statement!" << endl;
-            continue;
-        }
-        cout << "Valid Java print statement. " << endl;
+    while (cout << "Enter a Java print statement (0 to exit): ", getline(cin, input), input != "0") {
+        cout << (startsWithSystemOut(input) && extractPrintType(input, printTypeLength) && checkParameter(input, printTypeLength) ? "Valid" : "Invalid") 
+            << " Java print statement. " << endl;
     }
+
     return 0;
 }

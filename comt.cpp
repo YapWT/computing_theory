@@ -24,8 +24,7 @@ bool checkq1(string input, int &matchedPrint) {
 }
 
 bool checkAlphanumeric(const string& check) {
-    if (all_of(check.begin(), check.end(), ::isalnum)) return true;
-    else if (check.empty()) return false;
+    if (all_of(check.begin(), check.end(), [](char c) { return isalnum(c) || c == ' '; }))  return true;
     else cout << "Current version of algorithms does not support non-alphanumeric characters in print parameter." << endl;
     return false;
 }

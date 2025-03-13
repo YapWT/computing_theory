@@ -26,7 +26,7 @@ bool isAlphanumericWithSpace(string check) {
 }
 
 // Validate quotation marks and determine their type
-bool validQuotes(string input, int start, string& quotesType) {
+bool validQuotes(string input, int start, char& quotesType) {
     char startQuotes = input[start], endQuotes = input[input.length() - 3];
 
     return quotesType = startQuotes, 
@@ -36,17 +36,19 @@ bool validQuotes(string input, int start, string& quotesType) {
 // Validate the parameter inside the print statement
 bool checkParameter(string input, int printTypeLength) {
     printTypeLength += 11;
+    input.erase(input.find_last_not_of(" \t\n\r") + 1);
 
     if (input == "System.out.println();") return true;
     if (input.length() < printTypeLength + 4) return false;
 
-    string quotesType, param = input.substr(printTypeLength + 1, input.length() - printTypeLength - 4); // get the string in the parenthesis 
+    char quotesType;
+    string param = input.substr(printTypeLength + 1, input.length() - printTypeLength - 4); // get the string in the parenthesis 
 
     if (!validQuotes(input, printTypeLength, quotesType) || !isAlphanumericWithSpace(param)) return false; // not valid quotes or alphanumeric with space
 
     // valid printf syntax (only allow double quotes) 
     // Single quotes should contain only one character
-    return (printTypeLength - 11 == 7) ? (quotesType == "\"") : ((quotesType == "'" && param.length() == 1) || quotesType == "\"");
+    return (printTypeLength - 11 == 7) ? (quotesType == '"') : ((quotesType == '\'' && param.length() == 1) || quotesType == '\"');
 }
 
 int main() {
@@ -54,7 +56,8 @@ int main() {
     int printTypeLength = 0;
 
     while (cout << "Enter a Java print statement (0 to exit): ", getline(cin, input), input != "0") {
-        cout << (startsWithSystemOut(input) && extractPrintType(input, printTypeLength) && checkParameter(input, printTypeLength) ? "Valid" : "Invalid") 
+        input.erase(0, input.find_first_not_of(" \t\n\r"));
+        cout << (startsWithSystemOut(input) && extractPrintType(input, printTypeLength) && checkParameter(input, printTypeLength) ? "Valid" : "\033[44mInvalid\033[0m") 
             << " Java print statement. " << endl;
     }
 

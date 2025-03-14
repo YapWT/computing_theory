@@ -4,8 +4,10 @@
 #include <vector>
 #include <cstdlib>  // For rand()
 #include <ctime>    // For time()
+#include <chrono>
 
 using namespace std;
+using namespace chrono;
 
 string randomeGeneratePrintStatement() {
     vector<string> prefixes = {"print(", "printf(", "println("};
@@ -90,10 +92,15 @@ int main() {
     string input;
     int printTypeLength = 0;
 
-    while (cout << "Enter a Java print statement (0 to exit): ", getline(cin, input), input != "0") {
+    while (cout << "Enter a Java print statement (0 to exit): ", getline(cin, input), input != "0") {       
+        auto start = high_resolution_clock::now(); 
+        
         input.erase(0, input.find_first_not_of(" \t\n\r"));
         cout << (startsWithSystemOut(input) && extractPrintType(input, printTypeLength) && checkParameter(input, printTypeLength) ? "Valid" : "\033[44mInvalid\033[0m") 
             << " Java print statement. " << endl;
+        
+        auto stop = high_resolution_clock::now(); 
+        cout << "Time taken: " << (duration_cast<microseconds>(stop - start)).count() << endl;
     }
     
     // input =  "System.out.println();";
